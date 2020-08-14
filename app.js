@@ -3,7 +3,8 @@ const express=require("express")
 const ejs=require("ejs")
 const bodyp=require("body-parser")
 const mongoose=require("mongoose")
-const encrypt=require("mongoose-encryption")
+//const encrypt=require("mongoose-encryption")
+const md5=require("md5")
 
 const app=express()
 mongoose.connect("mongodb://localhost:27017/userDB",{ useNewUrlParser: true,useUnifiedTopology: true });
@@ -18,7 +19,7 @@ const userSchema=new mongoose.Schema({
   password:String
 });
 
-userSchema.plugin(encrypt,{secret:process.env.SECRET,encryptedFields:["password"]})
+//userSchema.plugin(encrypt,{secret:process.env.SECRET,encryptedFields:["password"]})
 
 const WebUser = mongoose.model("WebUser",userSchema);
 
@@ -43,7 +44,7 @@ app.post("/register",function(req,res){
   const pword=req.body.password;
   const newUser=new WebUser({
     email:uname,
-    password:pword
+    password:md5(pword)
   })
   newUser.save(function(err){
     if(!err){
@@ -54,7 +55,7 @@ app.post("/register",function(req,res){
 
 app.post("/login",function(req,res){
   const uname=req.body.username;
-  const pword=req.body.password;
+  const pword=md5(req.body.password);
 
   WebUser.findOne({email:uname},function(err,foundUser){
     if(!err){
